@@ -1,0 +1,18 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background-color: black;
+}
+
+canvas {
+    display: block;
+}
+
+#fpsDisplay {
+    position: absolute;
+    top: 0;
+    left: 100;
+    color: white;
+    font-size: 15px;
+    font-family: monospace
+}
