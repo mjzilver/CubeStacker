@@ -2,20 +2,23 @@ let particles = [];
 let ctx;
 let canvas;
 // fps variables
-let frameRate = 30;
+let frameRate = 60;
 let lastUpdateTime = 0;
+let lastFpsUpdate = 0;
 let updateInterval = 1000 / frameRate;
 let frameCount = 0;
-let fpsDisplay = document.getElementById('fpsDisplay'); 
+let fpsDisplay = document.getElementById('fpsDisplay');
 // gravity variables
 let gravityY = 0.4;
 let gravityX = 0;
 // how much the velocities slow down over time
 let friction = 0.99;
 // how much the particles bounce off each other
-let collisionReaction = 0.5;
+let collisionReaction = 2;
 
-import { Quadtree, Rectangle} from './quadtree.js';
+let mouse = { x: 0, y: 0, radius: 50, active: false };
+
+import { Quadtree, Rectangle } from './quadtree.js';
 import { Particle } from './particle.js';
 
 let qT;
@@ -55,22 +58,36 @@ function startFallingAnimation(text = "Hello World!") {
             let charWidth = ctx.measureText(char).width;
             let charHeight = fontSize;
 
-            particles.push( 
+            particles.push(
                 new Particle(
-                    char, 
-                    x, 
-                    y, 
-                    Math.random() * 5 + 1, 
-                    0, 
-                    charHeight, 
+                    char,
+                    x,
+                    y,
+                    Math.random() * 5 + 1,
+                    0,
+                    charHeight,
                     charWidth
-            ));
+                ));
             x += charWidth;
         }
         y += fontSize;
     }
 
+    qT.setMinSize(fontSize);
+
     requestAnimationFrame(animate);
+}
+
+function calculateFps(currentTime) {
+    // Calculate FPS
+    frameCount++;
+    const now = performance.now();
+    if (now - lastFpsUpdate >= 1000) { 
+        const fps = frameCount * 1000 / (now - lastFpsUpdate);
+        fpsDisplay.textContent = `FPS: ${Math.round(fps)}`;
+        frameCount = 0;
+        lastFpsUpdate = now;
+    }
 }
 
 function animate(currentTime) {
@@ -83,12 +100,10 @@ function animate(currentTime) {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         updateParticles();
-        drawParticles();
 
-        // Calculate FPS
-        const fps = Math.round(1000 / elapsedTime);
-        frameCount++;
-        fpsDisplay.textContent = `FPS: ${fps}`;
+        drawMouse();
+        drawParticles();
+        calculateFps(currentTime);
     }
 
     // Request next frame
@@ -111,7 +126,8 @@ function updateParticles() {
 
         applyFriction(p);
         applyGravity(p);
-        handleEdgeCollisions(p);        
+        applyMouseForce(p);
+        handleEdgeCollisions(p);
 
         // check for collisions with other particles
         for (let o of others) {
@@ -127,9 +143,24 @@ function updateParticles() {
 }
 
 function drawParticles() {
+    ctx.fillStyle = 'white';
+
     for (let p of particles) {
         ctx.fillText(p.char, p.x, p.y);
     }
+}
+
+function drawMouse() {
+    if (!mouse.active) return;
+
+    let gradient = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, mouse.radius);
+    gradient.addColorStop(0, 'grey');
+    gradient.addColorStop(1, 'transparent');
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(mouse.x, mouse.y, mouse.radius, 0, 2 * Math.PI);
+    ctx.fill();
 }
 
 function resolveCollision(p, o) {
@@ -149,8 +180,17 @@ function resolveCollision(p, o) {
 }
 
 function applyFriction(p) {
+    const velocityCap = 50;
+
+    // slow down the particle
     p.vx *= friction;
     p.vy *= friction;
+
+    // hard cap on the velocity
+    if (p.vy > velocityCap) p.vy = velocityCap;
+    if (p.vy < -velocityCap) p.vy = -velocityCap;
+    if (p.vx > velocityCap) p.vx = velocityCap;
+    if (p.vx < -velocityCap) p.vx = -velocityCap;
 }
 
 function applyGravity(p) {
@@ -158,23 +198,48 @@ function applyGravity(p) {
     p.vx += gravityX;
 }
 
+// mouse has its own gravitational field
+function applyMouseForce(p) {
+    if (!mouse.active) return;
+
+    // the distance between the particle and the mouse
+    let dx = mouse.x - p.x;
+    let dy = mouse.y - p.y;
+
+    // the angle between the particle and the mouse
+    let angle = Math.atan2(dy, dx);
+
+    // the distance between the particle and the mouse 
+    let distance = Math.sqrt(dx * dx + dy * dy);
+
+    // the force of the mouse on the particle
+    let force = mouse.radius / distance;
+
+    // the force on the x and y axis
+    let fx = Math.cos(angle) * force;
+    let fy = Math.sin(angle) * force;
+
+    p.vx += fx;
+    p.vy += fy;
+}
+
 function handleEdgeCollisions(p) {
     if (p.x <= 0) {
-        p.x = 0; 
-        p.vx = Math.abs(p.vx); 
+        p.x = 0;
+        p.vx = Math.abs(p.vx);
     } else if (p.x + p.width >= canvas.width) {
         p.x = canvas.width - p.width;
-        p.vx = -Math.abs(p.vx); 
+        p.vx = -Math.abs(p.vx);
     }
 
     if (p.y <= 0) {
-        p.y = 0; 
-        p.vy = Math.abs(p.vy); 
+        p.y = 0;
+        p.vy = Math.abs(p.vy);
     } else if (p.y + (p.height / 2) >= canvas.height) {
-        p.y = canvas.height - p.height / 2; 
-        p.vy = -Math.abs(p.vy / 2); 
+        p.y = canvas.height - p.height / 2;
+        p.vy = -Math.abs(p.vy / 2);
         // stops them from vibrating on the ground
-        if (Math.abs(p.vy) < 0.1 + gravityY) {
+        if (Math.abs(p.vy) < 0.5 + gravityY) {
             p.vy = 0;
         }
     }
@@ -184,15 +249,24 @@ function initCanvas() {
     if (!canvas) {
         canvas = document.getElementById('fallingCanvas');
         ctx = canvas.getContext('2d');
+        addEventListeners(canvas)
     }
-    
+
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight - 25;
 
     qT = new Quadtree(0, 0, canvas.width, canvas.height);
-    
-    canvas.addEventListener('click', (e) => {
-        console.log(`mouse x: ${e.clientX}, y: ${e.clientY}`);
+    mouse = { x: 0, y: 0, radius: 50, active: false };
+}
+
+function addEventListeners(canvas) {
+    canvas.addEventListener('mouseup', (e) => {
+        mouse.active = !mouse.active;
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
     });
 
     window.addEventListener('keyup', (e) => {
@@ -204,7 +278,7 @@ function initCanvas() {
             gravityX -= 0.05;
         } else if (e.key === 'ArrowRight') {
             gravityX += 0.05;
-        } 
+        }
         // typing letters just appears on the screen
         if (e.key.length === 1) {
             particles.push(new Particle(

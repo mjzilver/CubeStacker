@@ -23,7 +23,7 @@ class Rectangle {
 
 class Quadtree {
     capacity = 4;
-    minSize = 20;
+    minSize = 10;
 
     boundary = {
         x: 0,
@@ -37,6 +37,10 @@ class Quadtree {
 
     constructor(x, y, width, height) {
         this.boundary = { x, y, width, height };
+    }
+
+    setMinSize(size) {
+        this.minSize = size;
     }
 
     visualize(ctx) {

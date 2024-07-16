@@ -6,6 +6,7 @@ class Particle {
     vx = 0;
     height = 0;
     width = 0;
+    numSteps = 8; 
 
     constructor(char, x, y, vy, vx, height, width) {
         this.char = char;
@@ -31,13 +32,11 @@ class Particle {
             this.y + this.height + this.vy > other.y;
     }
 
-    checkCollisionAlongPath(other) {
-        const numSteps = 8; 
+    checkCollisionAlongPath(other) {    
+        const stepX = this.vx / this.numSteps;
+        const stepY = this.vy / this.numSteps;
     
-        const stepX = this.vx / numSteps;
-        const stepY = this.vy / numSteps;
-    
-        for (let i = 0; i <= numSteps; i++) {
+        for (let i = 0; i <= this.numSteps; i++) {
             const newX = this.x + i * stepX;
             const newY = this.y + i * stepY;
     
