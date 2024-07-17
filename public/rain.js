@@ -362,8 +362,11 @@ function addEventListeners(canvas) {
 }
 
 window.addEventListener('resize', () => {
-    if (particles.length > 0) {
-        startFallingAnimation(document.getElementById('fileInput').value);
+    if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight - 25;
+
+        ctx.font = '16px Monospace';
     }
 });
 
