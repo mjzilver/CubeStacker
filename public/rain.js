@@ -15,6 +15,9 @@ let gravityX = 0;
 let friction = 0.99;
 // how much the particles bounce off each other
 let collisionReaction = 0.8;
+// debug variables
+let debugVectors = false;
+let debugQuadtree = false;
 
 // Enum for mouse state
 const MouseState = {
@@ -124,6 +127,7 @@ function animate(currentTime) {
     }, 1000 / frameRate);
 }
 
+
 function updateParticles() {
     qT.clear();
 
@@ -145,6 +149,10 @@ function updateParticles() {
         applyMouseForce(p);
         handleEdgeCollisions(p);
 
+        if (debugQuadtree) {
+            qT.visualize(ctx);
+        }   
+
         // check for collisions with other particles
         for (let o of others) {
             if (p !== o && p.checkCollisionAlongPath(o)) {
@@ -163,6 +171,16 @@ function drawParticles() {
 
     for (let p of particles) {
         ctx.fillText(p.char, p.x, p.y);
+        // draw the vectors
+        if (debugVectors) {
+            ctx.strokeStyle = 'red';
+            ctx.beginPath();
+            const pCenterX = p.x + p.width / 2;
+            const pCenterY = p.y + p.height / 2;
+            ctx.moveTo(pCenterX, pCenterY);
+            ctx.lineTo(pCenterX + p.vx, pCenterY + p.vy);
+            ctx.stroke();
+        }
     }
 }
 
@@ -194,17 +212,17 @@ function drawMouse() {
 }
 
 function resolveCollision(p, o) {
-    const oCenterY = o.y + o.height / 2;
-    if (p.y < oCenterY) {
-        p.vy += collisionReaction + gravityY;
+    if (p.y < o.y) {
+        p.vy += collisionReaction;
     } else {
-        p.vy -= gravityY + collisionReaction;
+        p.vy -= collisionReaction;
     }
 
     const oCenterX = o.x + o.width / 2;
-    if (p.x < oCenterX) {
+    const pCenterX = p.x + p.width / 2;
+    if (pCenterX < oCenterX) {
         p.vx -= collisionReaction;
-    } else if (p.x > oCenterX) {
+    } else if (pCenterX > oCenterX) {
         p.vx += collisionReaction;
     } else {
         p.vx += Math.random() > 0.5 ? collisionReaction : -collisionReaction;
@@ -219,10 +237,10 @@ function applyFriction(p) {
     p.vy *= friction;
 
     // hard cap on the velocity
-    if (p.vy > velocityCap) p.vy = velocityCap;
-    if (p.vy < -velocityCap) p.vy = -velocityCap;
-    if (p.vx > velocityCap) p.vx = velocityCap;
-    if (p.vx < -velocityCap) p.vx = -velocityCap;
+    if (p.vy > velocityCap) p.vy = velocityCap / 2;
+    if (p.vy < -velocityCap) p.vy = -velocityCap / 2;
+    if (p.vx > velocityCap) p.vx = velocityCap / 2;
+    if (p.vx < -velocityCap) p.vx = -velocityCap / 2;
 }
 
 function applyGravity(p) {
@@ -234,16 +252,15 @@ function applySolidMouseForce() {
     if (mouse.state !== MouseState.SOLID) return;
 
     qT.insert(new Particle(
-            ' ',
-            mouse.x - mouse.radius / 2,
-            mouse.y - mouse.radius / 2,
-            0,
-            0,
-            mouse.radius,
-            mouse.radius
-        )
+        ' ',
+        mouse.x - mouse.radius / 2,
+        mouse.y - mouse.radius / 2,
+        0,
+        0,
+        mouse.radius,
+        mouse.radius
+    )
     );
-    qT.visualize(ctx);
 }
 
 // mouse has its own gravitational field
@@ -342,7 +359,7 @@ function addEventListeners(canvas) {
         }
 
         // typing letters just appears on the screen
-        if (e.key.length === 1) {
+        if (e.key.length === 1 && !e.ctrlKey) {
             particles.push(new Particle(
                 e.key,
                 Math.random() * canvas.width,
@@ -357,6 +374,9 @@ function addEventListeners(canvas) {
         // ctrl + r to reset
         if (e.ctrlKey && e.key === 'r') {
             particles = [];
+        } else if (e.ctrlKey && e.key === 'q') {
+            debugQuadtree = !debugQuadtree;
+            debugVectors = !debugVectors;
         }
     });
 }
