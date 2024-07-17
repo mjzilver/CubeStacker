@@ -39,6 +39,10 @@ class Quadtree {
         this.boundary = { x, y, width, height };
     }
 
+    calculateTotalPoints() {
+        return this.children.reduce((total, child) => total + child.calculateTotalPoints(), this.points.length);
+    }
+
     setMinSize(size) {
         this.minSize = size;
     }
@@ -79,7 +83,6 @@ class Quadtree {
 
         // Ensure minimum size for each quadrant
         if (halfWidth < this.minimumSize || halfHeight < this.minimumSize) {
-            console.log('Cannot subdivide further due to minimum size constraint.');
             return;
         }
 
@@ -100,7 +103,7 @@ class Quadtree {
         }
 
         this.points.forEach(point => {
-            if (range.contains(point)) {
+            if (range.intersects(point)) {
                 found.push(point);
             }
         });

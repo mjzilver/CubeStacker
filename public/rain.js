@@ -9,14 +9,27 @@ let updateInterval = 1000 / frameRate;
 let frameCount = 0;
 let fpsDisplay = document.getElementById('fpsDisplay');
 // gravity variables
-let gravityY = 0.4;
+let gravityY = 0.45;
 let gravityX = 0;
 // how much the velocities slow down over time
 let friction = 0.99;
 // how much the particles bounce off each other
-let collisionReaction = 2;
+let collisionReaction = 0.8;
 
-let mouse = { x: 0, y: 0, radius: 50, active: false };
+// Enum for mouse state
+const MouseState = {
+    GRAVITY: 'gravity',
+    SOLID: 'solid',
+    REPULSIVE: 'repulsive',
+    INACTIVE: 'inactive'
+};
+
+let mouse = {
+    x: 0,
+    y: 0,
+    radius: 50,
+    state: MouseState.INACTIVE
+};
 
 import { Quadtree, Rectangle } from './quadtree.js';
 import { Particle } from './particle.js';
@@ -79,10 +92,9 @@ function startFallingAnimation(text = "Hello World!") {
 }
 
 function calculateFps(currentTime) {
-    // Calculate FPS
     frameCount++;
     const now = performance.now();
-    if (now - lastFpsUpdate >= 1000) { 
+    if (now - lastFpsUpdate >= 1000) {
         const fps = frameCount * 1000 / (now - lastFpsUpdate);
         fpsDisplay.textContent = `FPS: ${Math.round(fps)}`;
         frameCount = 0;
@@ -114,9 +126,13 @@ function animate(currentTime) {
 
 function updateParticles() {
     qT.clear();
+
     for (let p of particles) {
         qT.insert(p);
+    }
+    applySolidMouseForce();
 
+    for (let p of particles) {
         let others = qT.query(new Rectangle(
             p.x,
             p.y,
@@ -151,28 +167,44 @@ function drawParticles() {
 }
 
 function drawMouse() {
-    if (!mouse.active) return;
+    switch (mouse.state) {
+        case MouseState.GRAVITY:
+            let gradient = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, mouse.radius);
+            gradient.addColorStop(0, 'grey');
+            gradient.addColorStop(1, 'transparent');
 
-    let gradient = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, mouse.radius);
-    gradient.addColorStop(0, 'grey');
-    gradient.addColorStop(1, 'transparent');
-
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(mouse.x, mouse.y, mouse.radius, 0, 2 * Math.PI);
-    ctx.fill();
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(mouse.x, mouse.y, mouse.radius, 0, 2 * Math.PI);
+            ctx.fill();
+            break;
+        case MouseState.SOLID:
+            ctx.strokeStyle = 'white';
+            ctx.strokeRect(
+                mouse.x - mouse.radius / 2,
+                mouse.y - mouse.radius / 2,
+                mouse.radius,
+                mouse.radius);
+            break;
+        case MouseState.REPULSIVE:
+            break;
+        case MouseState.INACTIVE:
+            break;
+    }
 }
 
 function resolveCollision(p, o) {
-    if (p.y < o.y) {
+    const oCenterY = o.y + o.height / 2;
+    if (p.y < oCenterY) {
         p.vy += collisionReaction + gravityY;
     } else {
         p.vy -= gravityY + collisionReaction;
     }
 
-    if (p.x < o.x) {
+    const oCenterX = o.x + o.width / 2;
+    if (p.x < oCenterX) {
         p.vx -= collisionReaction;
-    } else if (p.x > o.x) {
+    } else if (p.x > oCenterX) {
         p.vx += collisionReaction;
     } else {
         p.vx += Math.random() > 0.5 ? collisionReaction : -collisionReaction;
@@ -198,9 +230,25 @@ function applyGravity(p) {
     p.vx += gravityX;
 }
 
+function applySolidMouseForce() {
+    if (mouse.state !== MouseState.SOLID) return;
+
+    qT.insert(new Particle(
+            ' ',
+            mouse.x - mouse.radius / 2,
+            mouse.y - mouse.radius / 2,
+            0,
+            0,
+            mouse.radius,
+            mouse.radius
+        )
+    );
+    qT.visualize(ctx);
+}
+
 // mouse has its own gravitational field
 function applyMouseForce(p) {
-    if (!mouse.active) return;
+    if (mouse.state !== MouseState.GRAVITY) return;
 
     // the distance between the particle and the mouse
     let dx = mouse.x - p.x;
@@ -256,12 +304,25 @@ function initCanvas() {
     canvas.height = window.innerHeight - 25;
 
     qT = new Quadtree(0, 0, canvas.width, canvas.height);
-    mouse = { x: 0, y: 0, radius: 50, active: false };
+    mouse.state = MouseState.INACTIVE;
 }
 
 function addEventListeners(canvas) {
     canvas.addEventListener('mouseup', (e) => {
-        mouse.active = !mouse.active;
+        switch (mouse.state) {
+            case MouseState.GRAVITY:
+                mouse.state = MouseState.SOLID;
+                break;
+            case MouseState.SOLID:
+                mouse.state = MouseState.REPULSIVE;
+                break;
+            case MouseState.REPULSIVE:
+                mouse.state = MouseState.INACTIVE;
+                break;
+            case MouseState.INACTIVE:
+                mouse.state = MouseState.GRAVITY;
+                break;
+        }
     });
 
     canvas.addEventListener('mousemove', (e) => {
@@ -279,6 +340,7 @@ function addEventListeners(canvas) {
         } else if (e.key === 'ArrowRight') {
             gravityX += 0.05;
         }
+
         // typing letters just appears on the screen
         if (e.key.length === 1) {
             particles.push(new Particle(
@@ -290,6 +352,11 @@ function addEventListeners(canvas) {
                 16,
                 16
             ));
+        }
+
+        // ctrl + r to reset
+        if (e.ctrlKey && e.key === 'r') {
+            particles = [];
         }
     });
 }
