@@ -312,7 +312,7 @@ function handleEdgeCollisions(p) {
 
 function initCanvas() {
     if (!canvas) {
-        canvas = document.getElementById('fallingCanvas');
+        canvas = document.getElementById('canvas');
         ctx = canvas.getContext('2d');
         addEventListeners(canvas)
     }
