@@ -11,14 +11,16 @@ class Engine {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight - 25;
         this.particles = [];
+        this.paused = false;
+
+        // systems
         this.quadtree = new Quadtree(0, 0, this.canvas.width, this.canvas.height);
         this.physicsSystem = new PhysicsSystem();
         this.renderingSystem = new RenderingSystem(this.ctx, this.canvas);
-
         this.eventSystem = new EventSystem(this);
 
         for (let i = 0; i < 100; i++) {
-            this.randomParticle(5, 15);
+            this.randomParticle(25, 50);
         }
 
         requestAnimationFrame(() => this.gameLoop());
@@ -33,11 +35,15 @@ class Engine {
     createParticle(x, y, min, max) {
         const size = Math.random() * (max - min) + min;
         const particle = new CubeParticle(x, y, 0, 0, size, size, 'white');
+
         this.particles.push(particle);
+        this.quadtree.insert(particle);
     }
 
     gameLoop() {
-        this.physicsSystem.update(this.particles, this.quadtree, this.canvas.width, this.canvas.height);
+        if (!this.paused) {
+            this.physicsSystem.update(this.particles, this.quadtree, this.canvas.width, this.canvas.height);
+        }
         this.renderingSystem.draw(this);
         requestAnimationFrame(() => this.gameLoop());
     }

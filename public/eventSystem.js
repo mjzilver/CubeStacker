@@ -38,6 +38,16 @@ export class EventSystem {
             if (e.key === 'Backspace') {
                this.removeTypedCharacter();
             }
+
+            // ctrl + q to pause
+            if (e.key === 'q' && e.ctrlKey) {
+                this.engine.paused = !this.engine.paused;
+            }
+
+            // ctrl + z to reset
+            if (e.key === 'z' && e.ctrlKey) {
+                this.engine.particles = [];
+            }
         });
     }
 

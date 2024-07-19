@@ -6,11 +6,21 @@ export class PhysicsSystem {
         this.gravityY = gravityY;
         this.frictionX = 0.9;
         this.frictionY = 0.9;
+        this.maxVelocity = 100;
     }
 
     applyFriction(particle) {
         particle.vx *= this.frictionX;
         particle.vy *= this.frictionY;
+
+        // if hit max stop (prevents jittering block when they're stuck)
+        if (Math.abs(particle.vx) > this.maxVelocity) {
+            particle.vx = 0;
+        }
+
+        if (Math.abs(particle.vy) > this.maxVelocity) {
+            particle.vy = 0;
+        }
     }
 
     applyGravity(particle) {
@@ -44,35 +54,45 @@ export class PhysicsSystem {
     }
 
     resolveCollision(p, o) {
-        // if they are inside each other, move them apart
-        const pCenter = { x: p.x + p.width / 2, y: p.y + p.height / 2 };
-        const oCenter = { x: o.x + o.width / 2, y: o.y + o.height / 2 };
-        if (p.intersects(o)) {
-            if (pCenter.x < oCenter.x) {
-                p.x -= 1;
-                o.x += 1;
-            } else {
-                p.x += 1;
-                o.x -= 1;
-            }
-
-            if (pCenter.y < oCenter.y) {
-                p.y -= 1;
-                o.y += 1;
-            } else {
-                p.y += 1;
-                o.y -= 1;
-            }
-        }
-
         // find the direction of the collision
         const dx = (p.x + p.width / 2) - (o.x + o.width / 2);
         const dy = (p.y + p.height / 2) - (o.y + o.height / 2);
 
+        if (p.intersects(o)) {
+            // Calculate overlap in x and y directions
+            const overlapX = (p.width / 2 + o.width / 2) - Math.abs(dx);
+            const overlapY = (p.height / 2 + o.height / 2) - Math.abs(dy);
+            // Resolve overlap by separating the particles
+            const totalOverlap = Math.min(overlapX, overlapY);
+
+            if (overlapX < overlapY) {
+                if (dx > 0) {
+                    p.x += totalOverlap / 2;
+                    o.x -= totalOverlap / 2;
+                } else {
+                    p.x -= totalOverlap / 2;
+                    o.x += totalOverlap / 2;
+                }
+            } else {
+                if (dy > 0) {
+                    p.y += totalOverlap / 2;
+                    o.y -= totalOverlap / 2;
+                } else {
+                    p.y -= totalOverlap / 2;
+                    o.y += totalOverlap / 2;
+                }
+            }
+        }
+
         // find the angle of the collision
         const angle = Math.atan2(dy, dx);
 
-        const magnitudeScalingFactor = 25;
+        // scaling is used to prevent particles from jittering on top of each other
+        let magnitudeScalingFactor = 3;
+        if (p.intersects(o)) {
+            magnitudeScalingFactor = 0.75;
+        }
+
         // calculate the magnitude of the velocity
         const magnitudeP = Math.sqrt(p.vx * p.vx + p.vy * p.vy) / magnitudeScalingFactor;
         // calculate the magnitude of the velocity
@@ -107,8 +127,8 @@ export class PhysicsSystem {
             }
 
             // stop small movements
-            if (Math.abs(p.vx) < 0.15) p.vx = 0;
-            if (Math.abs(p.vy) < 0.15) p.vy = 0;
+            if (Math.abs(p.vx) < 0.3) p.vx = 0;
+            if (Math.abs(p.vy) < 0.3) p.vy = 0;
 
             this.handleEdgeCollisions(p, canvasWidth, canvasHeight);
 
