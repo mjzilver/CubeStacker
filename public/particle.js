@@ -1,5 +1,4 @@
 class Particle {
-    char = '';
     x = 0;
     y = 0;
     vy = 0;
@@ -8,9 +7,10 @@ class Particle {
     width = 0;
     defaultNumSteps = 8; 
     rotation = 0;
+    onGround = false;
+    frozen = false;
 
-    constructor(char, x, y, vy, vx, height, width) {
-        this.char = char;
+    constructor(x, y, vy, vx, height, width) {
         this.x = x;
         this.y = y;
         this.vy = vy;
