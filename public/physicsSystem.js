@@ -1,7 +1,7 @@
 import { Rectangle } from './quadtree.js';
 
 export class PhysicsSystem {
-    constructor(gravityX = 0, gravityY = 2) {
+    constructor(gravityX = 0, gravityY = 1) {
         this.gravityX = gravityX;
         this.gravityY = gravityY;
         this.frictionX = 0.9;

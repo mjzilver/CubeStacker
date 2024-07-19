@@ -4,20 +4,22 @@ export class RenderingSystem {
     constructor(ctx, canvas) {
         this.ctx = ctx;
         this.canvas = canvas;
+        this.debug = true;
     }
 
-    draw(particles) {
+    draw(engine) {
         this.ctx.fillStyle = 'black';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // put a little red box in the centre
-        this.ctx.fillStyle = 'red';
-        for (let p of particles) {
+        engine.quadtree.visualize(this.ctx);
 
+        for (let p of engine.particles) {
             if (p instanceof CharParticle) {
                 this.ctx.font = '16px Monospace';
-                // this.ctx.fillStyle = 'grey';
-                // this.ctx.fillRect(p.x, p.y, p.width, p.height);
+                if (this.debug) {
+                    this.ctx.fillStyle = 'grey';
+                    this.ctx.fillRect(p.x, p.y, p.width, p.height);
+                }
                 this.ctx.fillStyle = 'white';
 
                 // center the char
@@ -34,6 +36,18 @@ export class RenderingSystem {
                 this.ctx.fillStyle = 'white';
                 this.ctx.fillRect(p.x, p.y, p.width, p.height);
             }
+
+            if (this.debug) {
+                this.ctx.strokeStyle = 'red';
+                this.ctx.beginPath();
+                const pCenterX = p.x + p.width / 2;
+                const pCenterY = p.y + p.height / 2;
+                this.ctx.moveTo(pCenterX, pCenterY);
+                this.ctx.lineTo(pCenterX + p.vx, pCenterY + p.vy);
+                this.ctx.stroke();
+            }
         }
+
+
     }
 }

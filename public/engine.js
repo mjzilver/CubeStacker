@@ -11,7 +11,7 @@ class Engine {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight - 25;
         this.particles = [];
-        this.qT = new Quadtree(0, 0, this.canvas.width, this.canvas.height);
+        this.quadtree = new Quadtree(0, 0, this.canvas.width, this.canvas.height);
         this.physicsSystem = new PhysicsSystem();
         this.renderingSystem = new RenderingSystem(this.ctx, this.canvas);
 
@@ -37,8 +37,8 @@ class Engine {
     }
 
     gameLoop() {
-        this.physicsSystem.update(this.particles, this.qT, this.canvas.width, this.canvas.height);
-        this.renderingSystem.draw(this.particles);
+        this.physicsSystem.update(this.particles, this.quadtree, this.canvas.width, this.canvas.height);
+        this.renderingSystem.draw(this);
         requestAnimationFrame(() => this.gameLoop());
     }
 }
