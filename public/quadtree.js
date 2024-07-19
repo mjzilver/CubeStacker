@@ -12,6 +12,8 @@ class Rectangle {
             range.y >= this.y + this.h ||
             range.y + range.h <= this.y);
     }
+
+    
 }
 
 class Quadtree {

@@ -1,6 +1,7 @@
 import { CharParticle } from './particles/charParticle.js';
 import { CubeParticle } from './particles/cubeParticle.js';
 import { Rectangle } from './quadtree.js';
+import { Particle } from './particle.js';
 
 export class EventSystem {
     constructor(engine) {
@@ -29,19 +30,15 @@ export class EventSystem {
                 const y = e.clientY;
 
                 const newRectangle = new Rectangle(x, y, 2, 2);
+                const tempParticle = new Particle(x, y, 0, 0, 2, 2);
                 const particles = this.engine.quadtree.query(newRectangle);
 
-                console.log(`${JSON.stringify(newRectangle)}`);
-                console.log(`Particles in range: ${particles.length}`);
-
-                var l = new CubeParticle(x, y, 0, 0, 10, 10, 'white');
-                l.frozen = true;
-
-                this.engine.particles.push(l);
-
-                // delete particles
                 particles.forEach(p => {
-                    this.engine.particles = this.engine.particles.filter(particle => particle !== p);
+
+                    if (tempParticle.checkCollision(p))
+                    {
+                        p.color = 'red';
+                    }
                 });
             } else {
                 this.engine.createParticle(x, y, 10, 55);
@@ -139,8 +136,4 @@ export class EventSystem {
         };
         reader.readAsText(file);
     }
-
 }
-
-
-

@@ -21,7 +21,7 @@ export class RenderingSystem {
                 this.ctx.fillStyle = 'blue';
                 this.ctx.fillRect(p.x, p.y, p.width + 1, p.height + 1);
 
-                this.ctx.fillStyle = 'white';
+                this.ctx.fillStyle = p.color;
                 this.ctx.fillRect(p.x + 1, p.y + 1, p.width - 2, p.height - 2);
             } else if (p instanceof CharParticle) {
                 this.ctx.font = '16px Monospace';

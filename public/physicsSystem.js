@@ -58,7 +58,7 @@ export class PhysicsSystem {
         const dx = (p.x + p.width / 2) - (o.x + o.width / 2);
         const dy = (p.y + p.height / 2) - (o.y + o.height / 2);
 
-        if (p.intersects(o)) {
+        if (p.checkCollision(o)) {
             // Calculate overlap in x and y directions
             const overlapX = (p.width / 2 + o.width / 2) - Math.abs(dx);
             const overlapY = (p.height / 2 + o.height / 2) - Math.abs(dy);
@@ -89,7 +89,7 @@ export class PhysicsSystem {
 
         // scaling is used to prevent particles from jittering on top of each other
         let magnitudeScalingFactor = 3;
-        if (p.intersects(o)) {
+        if (p.checkCollision(o)) {
             magnitudeScalingFactor = 0.75;
         }
 

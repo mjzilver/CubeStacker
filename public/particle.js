@@ -20,7 +20,7 @@ class Particle {
         this.width = width;
     }
 
-    intersects(other) {
+    checkCollision(other) {
         return this.x < other.x + other.width &&
             this.x + this.width > other.x &&
             this.y < other.y + other.height &&

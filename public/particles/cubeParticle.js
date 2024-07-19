@@ -1,7 +1,7 @@
 import { Particle } from '../particle.js';
 
 class CubeParticle extends Particle {
-    color = 'white';
+    color = 'grey';
     defaultNumSteps = 3;
 
     constructor(x, y, vy, vx, size) {
