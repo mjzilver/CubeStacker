@@ -126,7 +126,7 @@ export class PhysicsSystem {
             const others = quadtree.query(pathRectangle);
 
             for (let other of others) {
-                if (p !== other && p.checkCollisionAlongPath(other, 3)) {
+                if (p !== other && p.checkCollisionAlongPath(other, 5)) {
                     this.resolveCollision(p, other);
                     break;
                 }

@@ -6,27 +6,27 @@ class Rectangle {
         this.h = h;
     }
 
-    intersects(range) {
-        return !(range.x >= this.x + this.w ||
-            range.x + range.w <= this.x ||
-            range.y >= this.y + this.h ||
-            range.y + range.h <= this.y);
+    contains(point) {
+        return (point.x >= this.x - this.w &&
+            point.x + point.width < this.x + this.w &&
+            point.y >= this.y - this.h &&
+            point.y + point.height < this.y + this.h);
     }
 
-    
+    intersects(range) {
+        return !(range.x - range.w > this.x + this.w ||
+            range.x + range.w < this.x - this.w ||
+            range.y - range.h > this.y + this.h ||
+            range.y + range.h < this.y - this.h);
+    }
 }
 
 class Quadtree {
-    constructor(x, y, width, height, capacity = 4, minSize = 10) {
+    constructor(x, y, width, height, capacity = 4) {
         this.boundary = new Rectangle(x, y, width, height);
         this.capacity = capacity;
-        this.minSize = minSize;
         this.particles = [];
         this.children = [];
-    }
-
-    setMinSize(size) {
-        this.minSize = size;
     }
 
     visualize(ctx) {
@@ -43,7 +43,7 @@ class Quadtree {
     }
 
     insert(particle) {
-        if (!this.boundary.intersects(particle)) {
+        if (!this.boundary.contains(particle)) {
             return false;
         }
 
@@ -62,8 +62,7 @@ class Quadtree {
             }
         }
 
-        // If we reach here, the particle can't be inserted in any child
-        // Possibly due to size constraints
+        console.debug('Failed to insert particle');
         return false;
     }
 
@@ -72,14 +71,10 @@ class Quadtree {
         const halfWidth = w / 2;
         const halfHeight = h / 2;
 
-        if (halfWidth < this.minSize || halfHeight < this.minSize) {
-            return;
-        }
-
-        this.children.push(new Quadtree(x, y, halfWidth, halfHeight, this.capacity, this.minSize));
-        this.children.push(new Quadtree(x + halfWidth, y, halfWidth, halfHeight, this.capacity, this.minSize));
-        this.children.push(new Quadtree(x, y + halfHeight, halfWidth, halfHeight, this.capacity, this.minSize));
-        this.children.push(new Quadtree(x + halfWidth, y + halfHeight, halfWidth, halfHeight, this.capacity, this.minSize));
+        this.children.push(new Quadtree(x, y, halfWidth, halfHeight, this.capacity));
+        this.children.push(new Quadtree(x + halfWidth, y, halfWidth, halfHeight, this.capacity));
+        this.children.push(new Quadtree(x, y + halfHeight, halfWidth, halfHeight, this.capacity));
+        this.children.push(new Quadtree(x + halfWidth, y + halfHeight, halfWidth, halfHeight, this.capacity));
     }
 
     query(range, found = []) {

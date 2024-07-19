@@ -19,8 +19,8 @@ class Engine {
         this.renderingSystem = new RenderingSystem(this.ctx, this.canvas);
         this.eventSystem = new EventSystem(this);
 
-        for (let i = 0; i < 30; i++) {
-            this.randomParticle(25, 50);
+        for (let i = 0; i < 1000; i++) {
+            this.randomParticle(10, 25);
         }
 
         requestAnimationFrame(() => this.gameLoop());

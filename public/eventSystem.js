@@ -1,5 +1,4 @@
 import { CharParticle } from './particles/charParticle.js';
-import { CubeParticle } from './particles/cubeParticle.js';
 import { Rectangle } from './quadtree.js';
 import { Particle } from './particle.js';
 
@@ -17,7 +16,6 @@ export class EventSystem {
 
         this.initMouseListeners();
         this.initKeyboardListeners();
-        window.handleFileSelect = this.handleFileSelect;
     }
 
     initMouseListeners() {
@@ -70,6 +68,10 @@ export class EventSystem {
             if (e.key === 'z' && e.ctrlKey) {
                 this.engine.particles = [];
             }
+
+            if (e.key === 'a' && e.ctrlKey) {
+                this.engine.renderingSystem.debug = !this.engine.renderingSystem.debug;
+            }
         });
     }
 
@@ -118,22 +120,5 @@ export class EventSystem {
         }
         this.typedCharsOffsetX = 0;
         this.typedChars = [];
-    }
-
-    handleFileSelect(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const text = e.target.result;
-            for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                this.addTypedCharacter(char);
-            }
-            this.releaseTypedCharacters();
-
-        };
-        reader.readAsText(file);
     }
 }
