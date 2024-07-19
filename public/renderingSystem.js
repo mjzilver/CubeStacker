@@ -5,16 +5,14 @@ export class RenderingSystem {
     constructor(ctx, canvas) {
         this.ctx = ctx;
         this.canvas = canvas;
-        this.debug = false;
-        this.threeD = true;
+        this.debug = true;
+        this.threeD = false;
     }
 
     draw(engine) {
         this.ctx.fillStyle = 'black';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-
-
+        
         for (let p of engine.particles) {
             if (p instanceof CubeParticle) {
                 this.ctx.fillStyle = 'red';
@@ -37,6 +35,7 @@ export class RenderingSystem {
                 this.ctx.fillText(p.char, p.x + p.width / 4, p.y + p.height * 3 / 4);
             }
         }
+        this.ctx.fillStyle = 'white';
 
         if (this.debug)
             this.debugDraw(engine);

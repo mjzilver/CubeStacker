@@ -6,6 +6,7 @@ class CubeParticle extends Particle {
 
     constructor(x, y, vy, vx, size) {
         super(x, y, vy, vx, size, size);
+        this.weight = size; 
     }
 }
 

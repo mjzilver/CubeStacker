@@ -116,10 +116,16 @@ export class PhysicsSystem {
             this.applyGravity(p);
             this.applyFriction(p);
 
-            const newRectangle = new Rectangle(p.x, p.y, p.width, p.height);
-            const points = quadtree.query(newRectangle);
+            // check for collisions along the path
+            const pathRectangle = new Rectangle(
+                Math.min(p.x, p.x + p.vx),
+                Math.min(p.y, p.y + p.vy),
+                p.width + Math.abs(p.vx),
+                p.height + Math.abs(p.vy)
+            );
+            const others = quadtree.query(pathRectangle);
 
-            for (let other of points) {
+            for (let other of others) {
                 if (p !== other && p.checkCollisionAlongPath(other, 3)) {
                     this.resolveCollision(p, other);
                     break;

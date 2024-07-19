@@ -9,6 +9,7 @@ class Particle {
     rotation = 0;
     onGround = false;
     frozen = false;
+    weight = 1;
 
     constructor(x, y, vy, vx, height, width) {
         this.x = x;

@@ -1,4 +1,6 @@
 import { CharParticle } from './particles/charParticle.js';
+import { CubeParticle } from './particles/cubeParticle.js';
+import { Rectangle } from './quadtree.js';
 
 export class EventSystem {
     constructor(engine) {
@@ -21,8 +23,31 @@ export class EventSystem {
         this.canvas.addEventListener('mouseup', (e) => {
             const x = e.clientX;
             const y = e.clientY;
-            this.engine.createParticle(x, y, 10, 55);
+
+            if (e.ctrlKey) {
+                const x = e.clientX;
+                const y = e.clientY;
+
+                const newRectangle = new Rectangle(x, y, 2, 2);
+                const particles = this.engine.quadtree.query(newRectangle);
+
+                console.log(`${JSON.stringify(newRectangle)}`);
+                console.log(`Particles in range: ${particles.length}`);
+
+                var l = new CubeParticle(x, y, 0, 0, 10, 10, 'white');
+                l.frozen = true;
+
+                this.engine.particles.push(l);
+
+                // delete particles
+                particles.forEach(p => {
+                    this.engine.particles = this.engine.particles.filter(particle => particle !== p);
+                });
+            } else {
+                this.engine.createParticle(x, y, 10, 55);
+            }
         });
+
     }
 
     initKeyboardListeners() {
@@ -36,7 +61,7 @@ export class EventSystem {
             }
 
             if (e.key === 'Backspace') {
-               this.removeTypedCharacter();
+                this.removeTypedCharacter();
             }
 
             // ctrl + q to pause
@@ -101,7 +126,7 @@ export class EventSystem {
     handleFileSelect(event) {
         const file = event.target.files[0];
         if (!file) return;
-    
+
         const reader = new FileReader();
         reader.onload = function (e) {
             const text = e.target.result;
@@ -114,7 +139,7 @@ export class EventSystem {
         };
         reader.readAsText(file);
     }
-    
+
 }
 
 

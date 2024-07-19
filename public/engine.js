@@ -9,7 +9,7 @@ class Engine {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight - 25;
+        this.canvas.height = window.innerHeight;
         this.particles = [];
         this.paused = false;
 
@@ -19,7 +19,7 @@ class Engine {
         this.renderingSystem = new RenderingSystem(this.ctx, this.canvas);
         this.eventSystem = new EventSystem(this);
 
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 30; i++) {
             this.randomParticle(25, 50);
         }
 
