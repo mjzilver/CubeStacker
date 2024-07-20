@@ -14,15 +14,20 @@ class Engine {
         this.paused = false;
 
         // systems
-        this.quadtree = new Quadtree(0, 0, this.canvas.width, this.canvas.height);
+        const quadTreeMargin = 5;
+        this.quadtree = new Quadtree(
+            -quadTreeMargin, 
+            -quadTreeMargin , 
+            this.canvas.width + quadTreeMargin, 
+            this.canvas.height + quadTreeMargin);
         this.physicsSystem = new PhysicsSystem();
         this.renderingSystem = new RenderingSystem(this.ctx, this.canvas);
         this.eventSystem = new EventSystem(this);
 
-        for (let i = 0; i < 1000; i++) {
-            this.randomParticle(10, 25);
+        for (let i = 0; i < 200; i++) {
+            this.randomParticle(15, 25);
         }
-
+        
         requestAnimationFrame(() => this.gameLoop());
     }
 
@@ -35,7 +40,8 @@ class Engine {
     createParticle(x, y, min, max) {
         const size = Math.random() * (max - min) + min;
         const particle = new CubeParticle(x, y, 0, 0, size, size, 'white');
-
+        const randomColor = Math.floor(Math.random()*16777215).toString(16);
+        particle.color = '#' + randomColor
         this.particles.push(particle);
         this.quadtree.insert(particle);
     }

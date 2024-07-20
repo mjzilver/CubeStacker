@@ -5,7 +5,7 @@ export class RenderingSystem {
     constructor(ctx, canvas) {
         this.ctx = ctx;
         this.canvas = canvas;
-        this.debug = true;
+        this.debug = false;
         this.threeD = false;
     }
 
@@ -15,11 +15,11 @@ export class RenderingSystem {
         
         for (let p of engine.particles) {
             if (p instanceof CubeParticle) {
-                this.ctx.fillStyle = 'red';
-                this.ctx.fillRect(p.x - 1, p.y - 1, p.width, p.height);
+                // this.ctx.fillStyle = 'red';
+                // this.ctx.fillRect(p.x - 1, p.y - 1, p.width, p.height);
 
-                this.ctx.fillStyle = 'blue';
-                this.ctx.fillRect(p.x, p.y, p.width + 1, p.height + 1);
+                this.ctx.fillStyle = p.secondColor;
+                this.ctx.fillRect(p.x -1, p.y-1, p.width + 1, p.height + 1);
 
                 this.ctx.fillStyle = p.color;
                 this.ctx.fillRect(p.x + 1, p.y + 1, p.width - 2, p.height - 2);
@@ -42,7 +42,6 @@ export class RenderingSystem {
     }
 
     draw3d(engine) {
-
         // Sort particles by their depth (y position) for proper layering
         var sortedParticles = engine.particles.filter(p => p instanceof CubeParticle).sort((a, b) => b.y - a.y);
 
@@ -95,7 +94,7 @@ export class RenderingSystem {
     debugDraw(engine) {
         engine.quadtree.visualize(this.ctx);
 
-        for (let p in this.particles) {
+        for (let p of engine.particles) {
             if (this.debug) {
                 this.ctx.strokeStyle = 'red';
                 this.ctx.beginPath();

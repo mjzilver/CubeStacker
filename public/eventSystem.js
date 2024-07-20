@@ -35,7 +35,8 @@ export class EventSystem {
 
                     if (tempParticle.checkCollision(p))
                     {
-                        p.color = 'red';
+                        // delete
+                        this.engine.particles = this.engine.particles.filter(particle => particle !== p);
                     }
                 });
             } else {

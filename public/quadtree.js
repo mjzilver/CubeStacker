@@ -62,7 +62,6 @@ class Quadtree {
             }
         }
 
-        console.debug('Failed to insert particle');
         return false;
     }
 
