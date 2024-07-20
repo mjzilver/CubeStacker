@@ -70,6 +70,7 @@ export class EventSystem {
                 this.engine.particles = [];
             }
 
+            // ctrl + a to toggle debug
             if (e.key === 'a' && e.ctrlKey) {
                 this.engine.renderingSystem.debug = !this.engine.renderingSystem.debug;
             }
@@ -114,7 +115,6 @@ export class EventSystem {
 
     releaseTypedCharacters() {
         for (let p of this.typedChars) {
-            // reset velocity otherwise it builds up
             p.vy = 0;
             p.vx = 0;
             p.frozen = false;

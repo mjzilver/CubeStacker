@@ -4,6 +4,10 @@ import { PhysicsSystem } from './physicsSystem.js';
 import { RenderingSystem } from './renderingSystem.js';
 import { EventSystem } from './eventSystem.js';
 
+Math.randomRange = function (min, max) {
+    return Math.random() * (max - min) + min;
+};
+
 class Engine {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
@@ -13,7 +17,6 @@ class Engine {
         this.particles = [];
         this.paused = false;
 
-        // systems
         const quadTreeMargin = 5;
         this.quadtree = new Quadtree(
             -quadTreeMargin, 
@@ -31,14 +34,14 @@ class Engine {
         requestAnimationFrame(() => this.gameLoop());
     }
 
-    randomParticle(min, max) {
-        const x = Math.random() * this.canvas.width;
-        const y = Math.random() * this.canvas.height;
-        this.createParticle(x, y, min, max);
+    randomParticle(minSize, maxSize) {
+        const x = Math.randomRange(0, this.canvas.width - maxSize);
+        const y = Math.randomRange(maxSize, this.canvas.height - maxSize);
+        this.createParticle(x, y, minSize, maxSize);
     }
 
-    createParticle(x, y, min, max) {
-        const size = Math.random() * (max - min) + min;
+    createParticle(x, y, minSize, maxSize) {
+        const size = Math.randomRange(minSize, maxSize);
         const particle = new CubeParticle(x, y, 0, 0, size, size, 'white');
         const randomColor = Math.floor(Math.random()*16777215).toString(16);
         particle.color = '#' + randomColor

@@ -85,7 +85,6 @@ export class PhysicsSystem {
             if (Math.abs(p.vx) < 0.3) p.vx = 0;
             if (Math.abs(p.vy) < 0.3) p.vy = 0;
 
-
             if (!p.frozen) {
                 p.x += p.vx;
                 p.y += p.vy;
