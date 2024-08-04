@@ -1,14 +1,10 @@
 class Particle {
-    // position
     x = 0;
     y = 0;
-    // velocity
     vy = 0;
     vx = 0;
-    // dimensions
     height = 0;
     width = 0;
-    // default number of steps to check for collision
     defaultNumSteps = 8; 
     frozen = false;
 

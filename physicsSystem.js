@@ -20,13 +20,10 @@ export class PhysicsSystem {
     }
 
     resolveCollision(p, o) {
-        // find the direction of the collision
         const dx = (p.x + p.width / 2) - (o.x + o.width / 2);
         const dy = (p.y + p.height / 2) - (o.y + o.height / 2);
-        // find the angle of the collision
         const angle = Math.atan2(dy, dx);
 
-        // scaling is used to prevent particles from jittering on top of each other
         let magnitudeScalingFactor = 5;
         if (p.checkCollision(o)) {
             p.secondColor = 'red';
@@ -35,9 +32,7 @@ export class PhysicsSystem {
             p.secondColor = 'blue';
         }
 
-        // calculate the magnitude of the velocity
         const magnitudeP = Math.sqrt(p.vx * p.vx + p.vy * p.vy) / magnitudeScalingFactor;
-        // calculate the magnitude of the velocity
         const magnitudeO = Math.sqrt(o.vx * o.vx + o.vy * o.vy) / magnitudeScalingFactor;
 
         p.vy = magnitudeP * Math.sin(angle);
@@ -60,7 +55,6 @@ export class PhysicsSystem {
             this.applyGravity(p);
             this.applyFriction(p);
 
-            // check for collisions along the path
             const pathRectangle = new Rectangle(
                 Math.min(p.x, p.x + p.vx),
                 Math.min(p.y, p.y + p.vy),
@@ -72,7 +66,6 @@ export class PhysicsSystem {
             for (let other of others) {
                 if (p !== other && p.checkCollisionAlongPath(other, 3)) {
                     this.resolveCollision(p, other);
-                    // transfer some velocity to the other particle
                     other.vx += p.vx ;
                     other.vy += p.vy;
                     break;
@@ -81,7 +74,6 @@ export class PhysicsSystem {
                 }
             }
 
-            // stop small movements
             if (Math.abs(p.vx) < 0.3) p.vx = 0;
             if (Math.abs(p.vy) < 0.3) p.vy = 0;
 
@@ -90,7 +82,6 @@ export class PhysicsSystem {
                 p.y += p.vy;
             }
 
-            // if attempting to move outside of the canvas, reset position
             if (p.y < 0 || p.y + p.height > canvasHeight) {
                 p.y = old.y;
             } else if (p.x < 0 || p.x + p.width > canvasWidth) {
